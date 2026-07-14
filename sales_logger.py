@@ -30,7 +30,7 @@ def append_to_sheet(menu: str, qty: int, price: float) -> dict:
         raise RuntimeError("price ต้องไม่ติดลบ")
 
     creds_json = os.environ.get("GOOGLE_SHEETS_CREDENTIALS")
-    sheet_id = os.environ.get("GOOGLE_SHEET_ID")
+    sheet_id = "1E8Drl8oCiyL582dtye919ULV8sa_k2ty_gR3iyFMh2k"
 
     if not creds_json:
         raise RuntimeError("ไม่พบ GOOGLE_SHEETS_CREDENTIALS")

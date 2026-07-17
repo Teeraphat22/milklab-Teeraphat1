@@ -10,6 +10,8 @@ then sends a notification via Telegram or LINE bot.
 นักศึกษาต้องเติม TODO ใน 4 จุดด้านล่างใน Session 2 Lab 1.3
 """
 
+import json
+import gspread
 import argparse
 import os
 import sys
@@ -38,29 +40,29 @@ def append_to_sheet(menu: str, qty: int, price: float) -> dict:
         raise RuntimeError("ไม่พบ GOOGLE_SHEET_ID")
 
 
-        credentials_info = json.loads(creds_json)
+    credentials_info = json.loads(creds_json)
 
-        scopes = [
+    scopes = [
             "https://www.googleapis.com/auth/spreadsheets",
             "https://www.googleapis.com/auth/drive"
         ]
 
-        creds = Credentials.from_service_account_info(
+    creds = Credentials.from_service_account_info(
             credentials_info,
             scopes=scopes
         )
 
-        client = gspread.authorize(creds)
+    client = gspread.authorize(creds)
 
-        spreadsheet = client.open_by_key(sheet_id)
+    spreadsheet = client.open_by_key(sheet_id)
 
-        worksheet = spreadsheet.worksheet("Sheet1")
+    worksheet = spreadsheet.worksheet("Sheet1")
 
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        total = qty * price
+    total = qty * price
 
-        worksheet.append_row([
+    worksheet.append_row([
             timestamp,
             menu,
             qty,
@@ -68,7 +70,7 @@ def append_to_sheet(menu: str, qty: int, price: float) -> dict:
             total
         ])
 
-        return {
+    return {
             "timestamp": timestamp,
             "menu": menu,
             "qty": qty,

@@ -9,6 +9,7 @@ then sends a notification via Telegram or LINE bot.
 
 นักศึกษาต้องเติม TODO ใน 4 จุดด้านล่างใน Session 2 Lab 1.3
 """
+
 import json
 import gspread
 import argparse
@@ -42,14 +43,14 @@ def append_to_sheet(menu: str, qty: int, price: float) -> dict:
     credentials_info = json.loads(creds_json)
 
     scopes = [
-        "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive"
-    ]
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive"
+        ]
 
     creds = Credentials.from_service_account_info(
-        credentials_info,
-        scopes=scopes
-    )
+            credentials_info,
+            scopes=scopes
+        )
 
     client = gspread.authorize(creds)
 
@@ -62,21 +63,20 @@ def append_to_sheet(menu: str, qty: int, price: float) -> dict:
     total = qty * price
 
     worksheet.append_row([
-        timestamp,
-        menu,
-        qty,
-        price,
-        total
-    ])
+            timestamp,
+            menu,
+            qty,
+            price,
+            total
+        ])
 
     return {
-        "timestamp": timestamp,
-        "menu": menu,
-        "qty": qty,
-        "price": price,
-        "total": total
-    }
-
+            "timestamp": timestamp,
+            "menu": menu,
+            "qty": qty,
+            "price": price,
+            "total": total
+        }
 
 def send_notification(message: str) -> str:
 

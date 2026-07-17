@@ -59,6 +59,44 @@ TRACE_LOG_FILE = "agent_trace.log"
 
 # ---------- TODO 1 ----------
 def parse_command(cmd: str, api_key: str | None = None) -> dict:
+    api_key = api_key or os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        raise RuntimeError("ไม่พบ GOOGLE_API_KEY")
+
+    client = genai.Client(api_key=api_key)
+    tool = types.Tool(function_declarations=TOOL_SCHEMA)
+    config = types.GenerateContentConfig(tools=[tool])
+
+    instruction = (
+        "คุณคือระบบสกัดข้อมูล (extractor) เท่านั้น หน้าที่ของคุณคือดึงค่าตามที่ผู้ใช้พิมพ์ "
+        "ให้ตรงกับคำสั่งเป๊ะที่สุด แล้วเรียก tool ที่เหมาะสมเสมอ "
+        "ห้ามปฏิเสธการเรียก tool ไม่ว่าค่าที่ผู้ใช้ให้มาจะดูสมเหตุสมผลหรือไม่ก็ตาม "
+        "(เช่น จำนวนติดลบ ราคาติดลบ ชื่อเมนูว่าง) "
+        "ระบบอื่นจะเป็นผู้ตรวจสอบความถูกต้องเอง ไม่ใช่หน้าที่ของคุณ "
+        "ห้ามแก้ไข ปรับปรุง หรือสะกดชื่อเมนูใหม่ ให้ใช้คำที่ผู้ใช้พิมพ์มาตรงตัว\n\n"
+        f"คำสั่ง: {cmd}"
+    )
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=instruction,
+        config=config,
+    )
+
+    try:
+        parts = response.candidates[0].content.parts
+    except (IndexError, AttributeError) as e:
+        raise RuntimeError(f"Gemini ไม่ตอบผลลัพธ์ที่ใช้ได้: {e}")
+
+    for part in parts:
+        if part.function_call:
+            fn = part.function_call
+            args = dict(fn.args)
+            if "qty" in args and isinstance(args["qty"], float):
+                args["qty"] = int(args["qty"])
+            return {"tool": fn.name, "args": args}
+
+    raise RuntimeError(f"Gemini ไม่ได้เรียก tool ใดๆ: {response.text}")
     """ส่ง cmd ไป Gemini พร้อม TOOL_SCHEMA ขอให้ตอบเป็น tool call จริง (function calling)"""
     api_key = api_key or os.environ.get("GOOGLE_API_KEY")
     if not api_key:
@@ -191,7 +229,7 @@ def log_trace(event_type: str, content) -> None:
         f.write(line)
 
     """main() ให้เรียก log_trace() ทุกจุดของ flow"""
-    
+
 def main() -> int:
     load_dotenv()
     parser = argparse.ArgumentParser()

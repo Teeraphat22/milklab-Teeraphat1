@@ -56,7 +56,7 @@ def generate_answer(query: str, context_chunks: list[str]) -> str:
     """TODO 5: ส่ง query + context ไป Gemini, return answer
     Hint: build prompt that says "ตอบจากข้อมูลต่อไปนี้เท่านั้น ถ้าไม่มีใน context ให้บอกว่าไม่รู้"
     """
-    api_key = os.environ.get("GOOGLE_API_KEY") or st.secrets.get("GOOGLE_API_KEY")
+    api_key = st.secrets.get("GOOGLE_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     client = genai.Client(api_key=api_key)
 
     context = "\n\n---\n\n".join(context_chunks)
